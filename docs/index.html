@@ -49,6 +49,8 @@
     }
     .app-logo { width: 96px; height: 96px; }
     .app-logo-sm { width: 28px; height: 28px; }
+    /* text-truncate を効かせるため、flex の子に min-width: 0 を与える */
+    .header-title { min-width: 0; }
   </style>
 </head>
 
@@ -85,9 +87,13 @@
   </svg>
 
   <main class="container py-3" style="max-width: 32rem;">
-    <header class="d-flex align-items-center gap-2 mb-3">
-      <svg class="app-logo-sm" aria-hidden="true"><use href="#logo"/></svg>
-      <span class="fs-5 fw-semibold">家計簿的</span>
+    <header class="d-flex align-items-center gap-2 mb-2">
+      <svg class="app-logo-sm flex-shrink-0" aria-hidden="true"><use href="#logo"/></svg>
+      <div class="flex-grow-1 lh-sm header-title">
+        <div class="fw-semibold">家計簿的</div>
+        <small class="d-block text-body-secondary text-truncate" id="sheetName" hidden></small>
+      </div>
+      <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" id="changeSheetButton" hidden>シートを変更</button>
     </header>
 
     <div id="message" class="alert" role="alert" hidden></div>
@@ -117,38 +123,40 @@
     </div>
 
     <div id="inputForm" hidden>
-      <div class="mb-3 d-flex align-items-center gap-2">
-        <small class="text-body-secondary text-truncate" id="sheetName"></small>
-        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" id="changeSheetButton">シートを変更</button>
-      </div>
-      <form id="entryForm" novalidate>
-        <div class="mb-3">
-          <label for="wallet" class="form-label">お財布</label>
+      <!-- iPhone SE でもスクロールなしで収まるよう、2 列配置にして余白を詰めている -->
+      <form id="entryForm" class="row g-2" novalidate>
+        <div class="col-6">
+          <label for="wallet" class="form-label mb-1">お財布</label>
           <select class="form-select" id="wallet" required></select>
         </div>
-        <div class="mb-3">
-          <label for="inputDate" class="form-label">日付</label>
+        <div class="col-6">
+          <label for="inputDate" class="form-label mb-1">日付</label>
           <input type="date" class="form-control" id="inputDate" required>
         </div>
-        <div class="btn-group mb-3" id="entryTypeGroup" role="group" aria-label="収支の種類">
-          <input type="radio" class="btn-check" name="entryType" id="typeExpense" value="expense" autocomplete="off" checked>
-          <label class="btn btn-outline-secondary" for="typeExpense">支出</label>
-          <input type="radio" class="btn-check" name="entryType" id="typeIncome" value="income" autocomplete="off">
-          <label class="btn btn-outline-secondary" for="typeIncome">収入</label>
+        <div class="col-4" id="entryTypeGroup">
+          <span class="form-label d-block mb-1">種類</span>
+          <div class="btn-group w-100" role="group" aria-label="収支の種類">
+            <input type="radio" class="btn-check" name="entryType" id="typeExpense" value="expense" autocomplete="off" checked>
+            <label class="btn btn-outline-secondary px-1" for="typeExpense">支出</label>
+            <input type="radio" class="btn-check" name="entryType" id="typeIncome" value="income" autocomplete="off">
+            <label class="btn btn-outline-secondary px-1" for="typeIncome">収入</label>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="category" class="form-label">費目</label>
+        <div class="col-8" id="categoryCol">
+          <label for="category" class="form-label mb-1">費目</label>
           <select class="form-select" id="category" required></select>
         </div>
-        <div class="mb-3">
-          <label for="amount" class="form-label" id="amountLabel">支出額</label>
-          <input type="number" class="form-control" id="amount" inputmode="numeric" step="1" placeholder="金額" required>
+        <div class="col-12">
+          <label for="amount" class="form-label mb-1" id="amountLabel">支出額</label>
+          <input type="number" class="form-control form-control-lg" id="amount" inputmode="numeric" step="1" placeholder="金額" required>
         </div>
-        <div class="mb-3">
-          <label for="note" class="form-label">備考</label>
+        <div class="col-12">
+          <label for="note" class="form-label mb-1">備考</label>
           <input type="text" class="form-control" id="note" placeholder="備考">
         </div>
-        <button type="submit" class="btn btn-primary" id="submitButton">登録</button>
+        <div class="col-12 mt-3">
+          <button type="submit" class="btn btn-primary w-100" id="submitButton">登録</button>
+        </div>
       </form>
     </div>
   </main>
@@ -452,6 +460,8 @@
 
       const ok = await loadSettings()
       $('inputForm').hidden = !ok
+      $('sheetName').hidden = !ok
+      $('changeSheetButton').hidden = !ok
       return ok
     }
 
@@ -478,7 +488,10 @@
       }
       fillSelect($('wallet'), wallets)
       // 収入の費目（C 列）がなければ切り替えを出さず、支出だけにする
-      $('entryTypeGroup').hidden = categories.income.length === 0
+      const hasIncome = categories.income.length > 0
+      $('entryTypeGroup').hidden = !hasIncome
+      $('categoryCol').classList.toggle('col-8', hasIncome)
+      $('categoryCol').classList.toggle('col-12', !hasIncome)
       setEntryType('expense')
       return true
     }
