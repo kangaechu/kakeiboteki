@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- 背景: 角丸の落ち着いた緑 -->
+  <rect x="0" y="0" width="120" height="120" rx="26" fill="#2E7D5B"/>
+
+  <!-- 家計簿ノート -->
+  <g transform="translate(22 20)">
+    <!-- 表紙 -->
+    <rect x="0" y="0" width="60" height="80" rx="8" fill="#FFFFFF"/>
+    <!-- 背表紙の帯 -->
+    <rect x="0" y="0" width="12" height="80" rx="8" fill="#E8F3EE"/>
+    <rect x="6" y="0" width="6" height="80" fill="#E8F3EE"/>
+    <!-- とじ穴 -->
+    <circle cx="6" cy="16" r="2.2" fill="#2E7D5B"/>
+    <circle cx="6" cy="32" r="2.2" fill="#2E7D5B"/>
+    <circle cx="6" cy="48" r="2.2" fill="#2E7D5B"/>
+    <circle cx="6" cy="64" r="2.2" fill="#2E7D5B"/>
+    <!-- 罫線 -->
+    <rect x="20" y="22" width="30" height="4" rx="2" fill="#C9DED4"/>
+    <rect x="20" y="36" width="30" height="4" rx="2" fill="#C9DED4"/>
+    <rect x="20" y="50" width="22" height="4" rx="2" fill="#C9DED4"/>
+  </g>
+
+  <!-- 円マークのコイン -->
+  <g transform="translate(78 74)">
+    <circle cx="0" cy="0" r="24" fill="#F4B942"/>
+    <circle cx="0" cy="0" r="19" fill="none" stroke="#FFFFFF" stroke-width="2.5" opacity="0.9"/>
+    <text x="0" y="9" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#5B3F0A">¥</text>
+  </g>
+</svg>
