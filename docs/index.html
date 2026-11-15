@@ -163,8 +163,9 @@
     // Picker で選んだスプレッドシートを保存する localStorage のキー
     const STORAGE_KEY = 'kakeibo.spreadsheet'
 
-    // 「設定」シート: A 列がお財布、B 列が費目の選択肢
-    const SETTINGS_RANGE = '設定'
+    // 「設定」シート: 1 行目は見出し、2 行目以降の A 列がお財布、B 列が費目の選択肢
+    const SETTINGS_SHEET = '設定'
+    const SETTINGS_RANGE = `${SETTINGS_SHEET}!A2:B`
     // 明細を追加するシート。列は A:登録時刻 B:日付 C:お財布 D:費目 E:(シート側の数式列、空で送る) F:支出額 G:備考
     const APPEND_RANGE = 'CURRENT!A:G'
 
@@ -439,14 +440,14 @@
           majorDimension: 'COLUMNS',
         }))
       } catch (err) {
-        showMessage(`「${SETTINGS_RANGE}」シートを読み込めませんでした: ${errorMessage(err)}`)
+        showMessage(`「${SETTINGS_SHEET}」シートを読み込めませんでした: ${errorMessage(err)}`)
         return false
       }
       const columns = response.result.values ?? []
       const wallets = columns[0] ?? []
       const categories = columns[1] ?? []
       if (wallets.length === 0 || categories.length === 0) {
-        showMessage(`「${SETTINGS_RANGE}」シートの A 列（お財布）と B 列（費目）に選択肢を入れてください`)
+        showMessage(`「${SETTINGS_SHEET}」シートの 2 行目以降に、A 列（お財布）と B 列（費目）の選択肢を入れてください`)
         return false
       }
       fillSelect($('wallet'), wallets)
