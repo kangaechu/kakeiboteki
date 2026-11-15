@@ -132,12 +132,6 @@
         <div class="col-6">
           <label for="inputDate" class="form-label mb-1">日付</label>
           <input type="date" class="form-control" id="inputDate" required>
-          <!-- よく使う日付を 1 タップで入れる。押した日付は選択状態で示す -->
-          <div class="btn-group btn-group-sm w-100 mt-1" role="group" aria-label="日付のショートカット">
-            <button type="button" class="btn btn-outline-secondary px-0" data-days-ago="0">今日</button>
-            <button type="button" class="btn btn-outline-secondary px-0" data-days-ago="1">昨日</button>
-            <button type="button" class="btn btn-outline-secondary px-0" data-days-ago="2">一昨日</button>
-          </div>
         </div>
         <div class="col-4" id="entryTypeGroup">
           <span class="form-label d-block mb-1">種類</span>
@@ -241,22 +235,8 @@
 
     // ローカルタイムゾーンの今日を YYYY-MM-DD で返す（input[type=date] 用）
     function todayString() {
-      return daysAgoString(0)
-    }
-
-    // ローカルタイムゾーンの n 日前を YYYY-MM-DD で返す
-    function daysAgoString(n) {
       const d = new Date()
-      d.setDate(d.getDate() - n)
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-    }
-
-    /** 日付欄の値に合わせて、今日・昨日・一昨日のボタンの選択状態を更新する */
-    function updateDateShortcuts() {
-      const value = $('inputDate').value
-      for (const btn of document.querySelectorAll('[data-days-ago]')) {
-        btn.classList.toggle('active', value === daysAgoString(Number(btn.dataset.daysAgo)))
-      }
     }
 
     // 登録時刻を YYYY/MM/DD HH:mm:ss で返す
@@ -595,14 +575,6 @@
     // ---------------------------------------------------------------
 
     $('inputDate').value = todayString()
-    updateDateShortcuts()
-    $('inputDate').addEventListener('change', updateDateShortcuts)
-    for (const btn of document.querySelectorAll('[data-days-ago]')) {
-      btn.addEventListener('click', () => {
-        $('inputDate').value = daysAgoString(Number(btn.dataset.daysAgo))
-        updateDateShortcuts()
-      })
-    }
     $('authorizeButton').addEventListener('click', handleAuthClick)
     $('changeSheetButton').addEventListener('click', openPicker)
     $('entryForm').addEventListener('submit', handleSubmit)
