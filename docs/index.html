@@ -102,7 +102,7 @@
     <div id="auth" class="text-center py-4" hidden>
       <svg class="app-logo mb-3" aria-hidden="true"><use href="#logo"/></svg>
       <h1 class="h3 mb-2">家計簿的</h1>
-      <p class="text-body-secondary mb-4">Google スプレッドシートの家計簿に、支出をさっと記録します。</p>
+      <p class="text-body-secondary mb-4">Google スプレッドシートの家計簿に、収支をさっと記録します。</p>
       <button type="button" class="btn btn-google d-inline-flex align-items-center gap-2" id="authorizeButton">
         <svg width="20" height="20" aria-hidden="true"><use href="#google-g"/></svg>
         Google でログイン
@@ -130,13 +130,19 @@
           <label for="inputDate" class="form-label">日付</label>
           <input type="date" class="form-control" id="inputDate" required>
         </div>
+        <div class="btn-group mb-3" id="entryTypeGroup" role="group" aria-label="収支の種類">
+          <input type="radio" class="btn-check" name="entryType" id="typeExpense" value="expense" autocomplete="off" checked>
+          <label class="btn btn-outline-secondary" for="typeExpense">支出</label>
+          <input type="radio" class="btn-check" name="entryType" id="typeIncome" value="income" autocomplete="off">
+          <label class="btn btn-outline-secondary" for="typeIncome">収入</label>
+        </div>
         <div class="mb-3">
           <label for="category" class="form-label">費目</label>
           <select class="form-select" id="category" required></select>
         </div>
         <div class="mb-3">
-          <label for="expense" class="form-label">支出額</label>
-          <input type="number" class="form-control" id="expense" inputmode="numeric" step="1" placeholder="支出額" required>
+          <label for="amount" class="form-label" id="amountLabel">支出額</label>
+          <input type="number" class="form-control" id="amount" inputmode="numeric" step="1" placeholder="金額" required>
         </div>
         <div class="mb-3">
           <label for="note" class="form-label">備考</label>
@@ -163,10 +169,10 @@
     // Picker で選んだスプレッドシートを保存する localStorage のキー
     const STORAGE_KEY = 'kakeibo.spreadsheet'
 
-    // 「設定」シート: 1 行目は見出し、2 行目以降の A 列がお財布、B 列が費目の選択肢
+    // 「設定」シート: 1 行目は見出し、2 行目以降の A 列がお財布、B 列が支出の費目、C 列が収入の費目
     const SETTINGS_SHEET = '設定'
-    const SETTINGS_RANGE = `${SETTINGS_SHEET}!A2:B`
-    // 明細を追加するシート。列は A:登録時刻 B:日付 C:お財布 D:費目 E:(シート側の数式列、空で送る) F:支出額 G:備考
+    const SETTINGS_RANGE = `${SETTINGS_SHEET}!A2:C`
+    // 明細を追加するシート。列は A:登録時刻 B:日付 C:お財布 D:費目 E:収入額 F:支出額 G:備考
     const APPEND_RANGE = 'CURRENT!A:G'
 
     // アクセストークンの期限切れをこの秒数前から「期限切れ」とみなして再取得する
@@ -180,6 +186,8 @@
     let spreadsheetId = null
     let tokenExpiresAt = 0
     let submitting = false
+    // 収支の種類ごとの費目の選択肢
+    const categories = { expense: [], income: [] }
 
     // ---------------------------------------------------------------
     // 画面まわり
@@ -445,14 +453,29 @@
       }
       const columns = response.result.values ?? []
       const wallets = columns[0] ?? []
-      const categories = columns[1] ?? []
-      if (wallets.length === 0 || categories.length === 0) {
-        showMessage(`「${SETTINGS_SHEET}」シートの 2 行目以降に、A 列（お財布）と B 列（費目）の選択肢を入れてください`)
+      categories.expense = columns[1] ?? []
+      categories.income = columns[2] ?? []
+      if (wallets.length === 0 || categories.expense.length === 0) {
+        showMessage(`「${SETTINGS_SHEET}」シートの 2 行目以降に、A 列（お財布）と B 列（支出の費目）の選択肢を入れてください`)
         return false
       }
       fillSelect($('wallet'), wallets)
-      fillSelect($('category'), categories)
+      // 収入の費目（C 列）がなければ切り替えを出さず、支出だけにする
+      $('entryTypeGroup').hidden = categories.income.length === 0
+      setEntryType('expense')
       return true
+    }
+
+    function currentEntryType() {
+      return $('typeIncome').checked ? 'income' : 'expense'
+    }
+
+    /** 収支の種類を切り替え、費目の選択肢と金額のラベルを合わせる */
+    function setEntryType(type) {
+      $('typeExpense').checked = type === 'expense'
+      $('typeIncome').checked = type === 'income'
+      fillSelect($('category'), categories[type])
+      $('amountLabel').textContent = type === 'income' ? '収入額' : '支出額'
     }
 
     // ---------------------------------------------------------------
@@ -477,13 +500,15 @@
       try {
         // トークンの再取得はクリック直後に行う（ポップアップブロック対策）
         await ensureToken()
+        const type = currentEntryType()
+        const amount = Number($('amount').value)
         const row = [
           nowString(),
           $('inputDate').value,
           $('wallet').value,
           $('category').value,
-          '', // E 列はシート側の数式列
-          Number($('expense').value),
+          type === 'income' ? amount : '', // E 列: 収入額
+          type === 'expense' ? amount : '', // F 列: 支出額
           $('note').value,
         ]
         await withAuthRetry(() => gapi.client.sheets.spreadsheets.values.append({
@@ -505,13 +530,13 @@
         button.disabled = false
       }
 
-      // 登録できたら金額と備考を消し、費目は先頭の選択肢に戻す（日付とお財布はそのまま）
-      $('expense').value = ''
+      // 登録できたら金額と備考を消し、支出の先頭の費目に戻す（日付とお財布はそのまま）
+      $('amount').value = ''
       $('note').value = ''
-      $('category').selectedIndex = 0
+      setEntryType('expense')
       form.classList.remove('was-validated')
       showMessage('登録しました', 'success')
-      $('expense').focus()
+      $('amount').focus()
     }
 
     // ---------------------------------------------------------------
@@ -522,6 +547,9 @@
     $('authorizeButton').addEventListener('click', handleAuthClick)
     $('changeSheetButton').addEventListener('click', openPicker)
     $('entryForm').addEventListener('submit', handleSubmit)
+    for (const radio of document.querySelectorAll('input[name="entryType"]')) {
+      radio.addEventListener('change', () => setEntryType(radio.value))
+    }
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js"
