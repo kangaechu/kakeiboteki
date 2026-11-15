@@ -1,51 +1,527 @@
 <!doctype html>
 <html lang="ja">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>家計簿的</title>
+  <script>
+    // OS のダークモード設定に合わせて Bootstrap のテーマを切り替える
+    const darkQuery = matchMedia('(prefers-color-scheme: dark)')
+    const applyTheme = () => document.documentElement.setAttribute('data-bs-theme', darkQuery.matches ? 'dark' : 'light')
+    applyTheme()
+    darkQuery.addEventListener('change', applyTheme)
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
   <style>
-    :root { color-scheme: light dark; }
-    body {
-      margin: 0;
-      padding: 2rem 1rem;
-      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", sans-serif;
-      line-height: 1.7;
-      max-width: 40rem;
-      margin-inline: auto;
+    /* Google のサインインボタンのガイドラインに沿った配色 */
+    .btn-google {
+      --bs-btn-bg: #fff;
+      --bs-btn-color: #1f1f1f;
+      --bs-btn-border-color: #747775;
+      --bs-btn-hover-bg: #f2f2f2;
+      --bs-btn-hover-color: #1f1f1f;
+      --bs-btn-hover-border-color: #747775;
+      --bs-btn-active-bg: #e6e6e6;
+      --bs-btn-active-color: #1f1f1f;
+      --bs-btn-active-border-color: #747775;
+      --bs-btn-padding-x: 1.25rem;
+      --bs-btn-padding-y: 0.6rem;
+      font-weight: 500;
     }
-    h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
-    .lead { opacity: 0.8; margin-top: 0; }
-    ul { padding-left: 1.4rem; }
-    footer { margin-top: 3rem; font-size: 0.9rem; opacity: 0.8; }
+    [data-bs-theme="dark"] .btn-google {
+      --bs-btn-bg: #131314;
+      --bs-btn-color: #e3e3e3;
+      --bs-btn-border-color: #8e918f;
+      --bs-btn-hover-bg: #2a2a2b;
+      --bs-btn-hover-color: #e3e3e3;
+      --bs-btn-hover-border-color: #8e918f;
+      --bs-btn-active-bg: #3a3a3b;
+      --bs-btn-active-color: #e3e3e3;
+      --bs-btn-active-border-color: #8e918f;
+    }
+    .app-logo { width: 96px; height: 96px; }
+    .app-logo-sm { width: 28px; height: 28px; }
   </style>
 </head>
+
 <body>
-  <h1>家計簿的</h1>
-  <p class="lead">Google スプレッドシートに家計簿を素早く記録するための個人用ウェブアプリです。</p>
+  <!-- ロゴ（ヘッダーとログイン画面で共用） -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="logo" viewBox="0 0 120 120">
+      <rect x="0" y="0" width="120" height="120" rx="26" fill="#2E7D5B"/>
+      <g transform="translate(22 20)">
+        <rect x="0" y="0" width="60" height="80" rx="8" fill="#FFFFFF"/>
+        <rect x="0" y="0" width="12" height="80" rx="8" fill="#E8F3EE"/>
+        <rect x="6" y="0" width="6" height="80" fill="#E8F3EE"/>
+        <circle cx="6" cy="16" r="2.2" fill="#2E7D5B"/>
+        <circle cx="6" cy="32" r="2.2" fill="#2E7D5B"/>
+        <circle cx="6" cy="48" r="2.2" fill="#2E7D5B"/>
+        <circle cx="6" cy="64" r="2.2" fill="#2E7D5B"/>
+        <rect x="20" y="22" width="30" height="4" rx="2" fill="#C9DED4"/>
+        <rect x="20" y="36" width="30" height="4" rx="2" fill="#C9DED4"/>
+        <rect x="20" y="50" width="22" height="4" rx="2" fill="#C9DED4"/>
+      </g>
+      <g transform="translate(78 74)">
+        <circle cx="0" cy="0" r="24" fill="#F4B942"/>
+        <circle cx="0" cy="0" r="19" fill="none" stroke="#FFFFFF" stroke-width="2.5" opacity="0.9"/>
+        <text x="0" y="9" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#5B3F0A">¥</text>
+      </g>
+    </symbol>
+    <!-- Google の "G" ロゴ -->
+    <symbol id="google-g" viewBox="0 0 48 48">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </symbol>
+  </svg>
 
-  <h2>できること</h2>
-  <ul>
-    <li>お財布・日付・費目・支出額・備考を入力し、ボタンひとつで家計簿のスプレッドシートに1行追加します。</li>
-    <li>お財布と費目の選択肢は、スプレッドシートの「設定」シートから読み込みます。</li>
-    <li>サーバーを持たず、ブラウザから Google の API を直接呼び出して動作します。</li>
-  </ul>
+  <main class="container py-3" style="max-width: 32rem;">
+    <header class="d-flex align-items-center gap-2 mb-3">
+      <svg class="app-logo-sm" aria-hidden="true"><use href="#logo"/></svg>
+      <span class="fs-5 fw-semibold">家計簿的</span>
+    </header>
 
-  <h2>データの扱い</h2>
-  <p>
-    このアプリは、Google Picker であなたが選んだスプレッドシートにだけアクセスします。
-    入力した内容はあなた自身の Google スプレッドシートに直接保存され、アプリの開発者を含む第三者には送信されません。
-    詳しくは <a href="./privacy.html">プライバシーポリシー</a> をご覧ください。
-  </p>
+    <div id="message" class="alert" role="alert" hidden></div>
 
-  <h2>リンク</h2>
-  <ul>
-    <li><a href="https://storage.googleapis.com/kangaechu-kakeibo/index.html">アプリを開く</a></li>
-    <li><a href="./privacy.html">プライバシーポリシー</a></li>
-  </ul>
+    <!-- Google のライブラリ読み込み中 -->
+    <div id="loading" class="text-center py-5">
+      <div class="spinner-border text-secondary" role="status" aria-hidden="true"></div>
+      <p class="text-body-secondary mt-3 mb-0">読み込み中…</p>
+    </div>
 
-  <footer>
-    開発者: <a href="https://github.com/kangaechu">kangaechu</a>
-  </footer>
+    <!-- ログイン画面 -->
+    <div id="auth" class="text-center py-4" hidden>
+      <svg class="app-logo mb-3" aria-hidden="true"><use href="#logo"/></svg>
+      <h1 class="h3 mb-2">家計簿的</h1>
+      <p class="text-body-secondary mb-4">Google スプレッドシートの家計簿に、支出をさっと記録します。</p>
+      <button type="button" class="btn btn-google d-inline-flex align-items-center gap-2" id="authorizeButton">
+        <svg width="20" height="20" aria-hidden="true"><use href="#google-g"/></svg>
+        Google でログイン
+      </button>
+      <p class="small text-body-secondary mt-4 mb-1 px-3">
+        ログイン後に選んだスプレッドシートだけにアクセスします。それ以外の Google ドライブのファイルは読み書きしません。
+      </p>
+      <p class="small mb-0">
+        <a href="./privacy.html" class="link-secondary">プライバシーポリシー</a>
+      </p>
+    </div>
+
+    <div id="inputForm" hidden>
+      <div class="mb-3 d-flex align-items-center gap-2">
+        <small class="text-body-secondary text-truncate" id="sheetName"></small>
+        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" id="changeSheetButton">シートを変更</button>
+      </div>
+      <form id="entryForm" novalidate>
+        <div class="mb-3">
+          <label for="wallet" class="form-label">お財布</label>
+          <select class="form-select" id="wallet" required></select>
+        </div>
+        <div class="mb-3">
+          <label for="inputDate" class="form-label">日付</label>
+          <input type="date" class="form-control" id="inputDate" required>
+        </div>
+        <div class="mb-3">
+          <label for="category" class="form-label">費目</label>
+          <select class="form-select" id="category" required></select>
+        </div>
+        <div class="mb-3">
+          <label for="expense" class="form-label">支出額</label>
+          <input type="number" class="form-control" id="expense" inputmode="numeric" step="1" placeholder="支出額" required>
+        </div>
+        <div class="mb-3">
+          <label for="note" class="form-label">備考</label>
+          <input type="text" class="form-control" id="note" placeholder="備考">
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitButton">登録</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // OAuth クライアント ID。先頭の数字部分が Cloud プロジェクト番号
+    const CLIENT_ID = '301905617104-mlanf3p9rb2o4g2n1gbu40jq49kaokhf.apps.googleusercontent.com'
+    // Google Picker 専用の API キー（Sheets API の呼び出しは OAuth トークンのみで行う）
+    const API_KEY = 'AIzaSyBhb_O5EcbNa3IXiOTsBw3a_ljOh76OB7w'
+    // Google Picker の setAppId に渡す Cloud プロジェクト番号
+    const APP_ID = CLIENT_ID.split('-')[0]
+
+    const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4'
+
+    // drive.file スコープ: このアプリで Picker から選んだファイルだけにアクセスできる
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file'
+
+    // Picker で選んだスプレッドシートを保存する localStorage のキー
+    const STORAGE_KEY = 'kakeibo.spreadsheet'
+
+    // 「設定」シート: A 列がお財布、B 列が費目の選択肢
+    const SETTINGS_RANGE = '設定'
+    // 明細を追加するシート。列は A:登録時刻 B:日付 C:お財布 D:費目 E:(シート側の数式列、空で送る) F:支出額 G:備考
+    const APPEND_RANGE = 'CURRENT!A:G'
+
+    // アクセストークンの期限切れをこの秒数前から「期限切れ」とみなして再取得する
+    const TOKEN_REFRESH_MARGIN_SEC = 60
+
+    const $ = (id) => document.getElementById(id)
+
+    let tokenClient
+    let gapiInited = false
+    let gisInited = false
+    let spreadsheetId = null
+    let tokenExpiresAt = 0
+    let submitting = false
+
+    // ---------------------------------------------------------------
+    // 画面まわり
+    // ---------------------------------------------------------------
+
+    function showMessage(text, type = 'danger') {
+      const el = $('message')
+      el.className = `alert alert-${type}`
+      el.textContent = text
+      el.hidden = false
+    }
+
+    function clearMessage() {
+      $('message').hidden = true
+    }
+
+    function pad(n) {
+      return String(n).padStart(2, '0')
+    }
+
+    // ローカルタイムゾーンの今日を YYYY-MM-DD で返す（input[type=date] 用）
+    function todayString() {
+      const d = new Date()
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    }
+
+    // 登録時刻を YYYY/MM/DD HH:mm:ss で返す
+    function nowString() {
+      const d = new Date()
+      return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ` +
+        `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+    }
+
+    function errorMessage(err) {
+      return err?.result?.error?.message || err?.message || String(err)
+    }
+
+    function fillSelect(sel, values) {
+      sel.replaceChildren()
+      for (const value of values) {
+        if (value === undefined || value === '') continue
+        const opt = document.createElement('option')
+        opt.value = value
+        opt.text = value
+        sel.add(opt)
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // Google API の初期化
+    // ---------------------------------------------------------------
+
+    /** api.js の読み込み完了後に呼ばれる */
+    function gapiLoaded() {
+      gapi.load('client:picker', initializeGapiClient)
+    }
+
+    async function initializeGapiClient() {
+      try {
+        // apiKey は渡さない。discovery ドキュメントの取得にキーは不要で、
+        // API 呼び出しは OAuth トークンで認証されるため
+        await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] })
+      } catch (err) {
+        $('loading').hidden = true
+        showMessage(`Google API の初期化に失敗しました: ${errorMessage(err)}`)
+        return
+      }
+      gapiInited = true
+      maybeEnableButtons()
+    }
+
+    /** Google Identity Services の読み込み完了後に呼ばれる */
+    function gisLoaded() {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: () => {}, // requestToken で都度差し替える
+      })
+      gisInited = true
+      maybeEnableButtons()
+    }
+
+    function maybeEnableButtons() {
+      if (gapiInited && gisInited) {
+        $('loading').hidden = true
+        $('auth').hidden = false
+      }
+    }
+
+    // ライブラリが一定時間たっても読み込めなければ案内を出す（オフラインや広告ブロッカーなど）
+    setTimeout(() => {
+      if (!(gapiInited && gisInited)) {
+        $('loading').hidden = true
+        showMessage('Google のライブラリを読み込めませんでした。ネットワーク接続を確認して、ページを再読み込みしてください')
+      }
+    }, 15000)
+
+    // ---------------------------------------------------------------
+    // 認証
+    // ---------------------------------------------------------------
+
+    /**
+     * アクセストークンを取得する。
+     * prompt が '' のときは、Google 側のセッションが有効なら画面を出さずに再取得する。
+     * ポップアップブロックを避けるため、クリックなどのユーザー操作の直後（await の前）に呼ぶこと。
+     */
+    function requestToken({ prompt } = {}) {
+      return new Promise((resolve, reject) => {
+        tokenClient.callback = (resp) => {
+          if (resp.error !== undefined) {
+            reject(new Error(resp.error_description || resp.error))
+            return
+          }
+          tokenExpiresAt = Date.now() + (Number(resp.expires_in) - TOKEN_REFRESH_MARGIN_SEC) * 1000
+          resolve(resp)
+        }
+        tokenClient.error_callback = (err) => {
+          reject(new Error(err.message || err.type))
+        }
+        tokenClient.requestAccessToken(prompt === undefined ? {} : { prompt })
+      })
+    }
+
+    function tokenIsValid() {
+      return gapi.client.getToken() !== null && Date.now() < tokenExpiresAt
+    }
+
+    /** トークンが切れていれば画面を出さずに再取得する */
+    async function ensureToken() {
+      if (tokenIsValid()) return
+      await requestToken({ prompt: '' })
+    }
+
+    /** 401 なら再認証して1回だけやり直す */
+    async function withAuthRetry(fn) {
+      try {
+        return await fn()
+      } catch (err) {
+        if (err?.status !== 401) throw err
+        await requestToken({ prompt: '' })
+        return await fn()
+      }
+    }
+
+    async function handleAuthClick() {
+      clearMessage()
+      const button = $('authorizeButton')
+      button.disabled = true
+      try {
+        await requestToken()
+      } catch (err) {
+        // ポップアップを閉じただけのときは静かに戻す
+        if (err.message !== 'popup_closed' && err.message !== 'access_denied') {
+          showMessage(`ログインに失敗しました: ${errorMessage(err)}`)
+        }
+        return
+      } finally {
+        button.disabled = false
+      }
+      $('auth').hidden = true
+      await onAuthorized()
+    }
+
+    /** 認証後: 保存済みのスプレッドシートがあればそれを使い、なければ Picker で選んでもらう */
+    async function onAuthorized() {
+      const saved = loadSavedSpreadsheet()
+      if (saved && await useSpreadsheet(saved.id)) {
+        return
+      }
+      openPicker()
+    }
+
+    // ---------------------------------------------------------------
+    // スプレッドシートの選択
+    // ---------------------------------------------------------------
+
+    function loadSavedSpreadsheet() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY)
+        return raw ? JSON.parse(raw) : null
+      } catch (err) {
+        console.warn(err)
+        return null
+      }
+    }
+
+    function saveSpreadsheet(id, name) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ id, name }))
+      } catch (err) {
+        console.warn(err)
+      }
+    }
+
+    /**
+     * Google Picker を開き、スプレッドシートを選んでもらう。
+     * drive.file スコープでは、ここで選んだファイルにだけアクセス権が付与される。
+     */
+    function openPicker() {
+      const token = gapi.client.getToken()
+      if (token === null) {
+        showMessage('ログインしてからシートを選択してください')
+        $('auth').hidden = false
+        return
+      }
+      const view = new google.picker.DocsView(google.picker.ViewId.SPREADSHEETS)
+        .setMode(google.picker.DocsViewMode.LIST)
+      const picker = new google.picker.PickerBuilder()
+        .setAppId(APP_ID)
+        .setDeveloperKey(API_KEY)
+        .setOAuthToken(token.access_token)
+        .setTitle('家計簿のスプレッドシートを選択')
+        .addView(view)
+        .setCallback(pickerCallback)
+        .build()
+      picker.setVisible(true)
+    }
+
+    async function pickerCallback(data) {
+      if (data.action !== google.picker.Action.PICKED) return
+      const doc = data.docs[0]
+      saveSpreadsheet(doc.id, doc.name)
+      await useSpreadsheet(doc.id)
+    }
+
+    /**
+     * 指定したスプレッドシートに切り替える。設定が読めたら入力フォームを表示して true を返す。
+     */
+    async function useSpreadsheet(id) {
+      clearMessage()
+      let response
+      try {
+        response = await withAuthRetry(() => gapi.client.sheets.spreadsheets.get({
+          spreadsheetId: id,
+          fields: 'properties.title',
+        }))
+      } catch (err) {
+        showMessage(`スプレッドシートを開けませんでした: ${errorMessage(err)}`)
+        return false
+      }
+      spreadsheetId = id
+      const title = response.result.properties.title
+      saveSpreadsheet(id, title)
+      $('sheetName').textContent = title
+
+      const ok = await loadSettings()
+      $('inputForm').hidden = !ok
+      return ok
+    }
+
+    /** 「設定」シートからお財布と費目の選択肢を読み込む */
+    async function loadSettings() {
+      let response
+      try {
+        response = await withAuthRetry(() => gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId,
+          range: SETTINGS_RANGE,
+          majorDimension: 'COLUMNS',
+        }))
+      } catch (err) {
+        showMessage(`「${SETTINGS_RANGE}」シートを読み込めませんでした: ${errorMessage(err)}`)
+        return false
+      }
+      const columns = response.result.values ?? []
+      const wallets = columns[0] ?? []
+      const categories = columns[1] ?? []
+      if (wallets.length === 0 || categories.length === 0) {
+        showMessage(`「${SETTINGS_RANGE}」シートの A 列（お財布）と B 列（費目）に選択肢を入れてください`)
+        return false
+      }
+      fillSelect($('wallet'), wallets)
+      fillSelect($('category'), categories)
+      return true
+    }
+
+    // ---------------------------------------------------------------
+    // 明細の登録
+    // ---------------------------------------------------------------
+
+    async function handleSubmit(event) {
+      event.preventDefault()
+      if (submitting) return
+
+      const form = event.target
+      if (!form.checkValidity()) {
+        form.classList.add('was-validated')
+        return
+      }
+
+      clearMessage()
+      submitting = true
+      const button = $('submitButton')
+      button.disabled = true
+
+      try {
+        // トークンの再取得はクリック直後に行う（ポップアップブロック対策）
+        await ensureToken()
+        const row = [
+          nowString(),
+          $('inputDate').value,
+          $('wallet').value,
+          $('category').value,
+          '', // E 列はシート側の数式列
+          Number($('expense').value),
+          $('note').value,
+        ]
+        await withAuthRetry(() => gapi.client.sheets.spreadsheets.values.append({
+          spreadsheetId,
+          range: APPEND_RANGE,
+          valueInputOption: 'USER_ENTERED',
+          resource: { values: [row] },
+        }))
+      } catch (err) {
+        if (err?.status === 401) {
+          showMessage('ログインの有効期限が切れました。もう一度ログインしてください')
+          $('auth').hidden = false
+        } else {
+          showMessage(`登録に失敗しました: ${errorMessage(err)}`)
+        }
+        return
+      } finally {
+        submitting = false
+        button.disabled = false
+      }
+
+      // 登録できたら金額と備考を消し、費目は先頭の選択肢に戻す（日付とお財布はそのまま）
+      $('expense').value = ''
+      $('note').value = ''
+      $('category').selectedIndex = 0
+      form.classList.remove('was-validated')
+      showMessage('登録しました', 'success')
+      $('expense').focus()
+    }
+
+    // ---------------------------------------------------------------
+    // 初期化
+    // ---------------------------------------------------------------
+
+    $('inputDate').value = todayString()
+    $('authorizeButton').addEventListener('click', handleAuthClick)
+    $('changeSheetButton').addEventListener('click', openPicker)
+    $('entryForm').addEventListener('submit', handleSubmit)
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-WyOxWvTyr1QaMPfiPJSv76iReVthorl5uWlFtZPyK0IEB0hGzo9y5Bp9mYanr8Bu"
+    crossorigin="anonymous"></script>
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </body>
+
 </html>
