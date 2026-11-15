@@ -11,7 +11,8 @@ Google スプレッドシートの家計簿に、スマホやブラウザから�
 - `docs/index.html`: アプリ本体。ビルドなしの HTML 1 枚で、Bootstrap と Google の API クライアントを CDN から読み込む
 - `docs/about.html`: アプリの説明ページ。OAuth 同意画面の「アプリのホームページ」に登録する
 - `docs/privacy.html`: プライバシーポリシー
-- `assets/logo/`: ロゴ（SVG と 120px / 512px の PNG）
+- `docs/icons/`, `docs/manifest.webmanifest`: ファビコン・ホーム画面用アイコンとウェブアプリマニフェスト。`assets/logo/` から生成したもの
+- `assets/logo/`: ロゴの元データ（SVG と 120px / 512px の PNG）
 
 ## 使い方
 
