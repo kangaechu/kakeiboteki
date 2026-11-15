@@ -218,7 +218,7 @@
     /** 登録できたことを画面下部のトーストで知らせる */
     function showSavedToast(text) {
       $('savedToastBody').textContent = text
-      bootstrap.Toast.getOrCreateInstance($('savedToast'), { delay: 3000 }).show()
+      bootstrap.Toast.getOrCreateInstance($('savedToast'), { delay: 1000 }).show()
     }
 
     function pad(n) {
