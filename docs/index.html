@@ -153,6 +153,17 @@
     </div>
   </main>
 
+  <!-- 登録完了のトースト（画面下部） -->
+  <div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3"
+    style="padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;">
+    <div id="savedToast" class="toast text-bg-success border-0" role="status" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="savedToastBody"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="閉じる"></button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // OAuth クライアント ID。先頭の数字部分が Cloud プロジェクト番号
     const CLIENT_ID = '301905617104-mlanf3p9rb2o4g2n1gbu40jq49kaokhf.apps.googleusercontent.com'
@@ -202,6 +213,12 @@
 
     function clearMessage() {
       $('message').hidden = true
+    }
+
+    /** 登録できたことを画面下部のトーストで知らせる */
+    function showSavedToast(text) {
+      $('savedToastBody').textContent = text
+      bootstrap.Toast.getOrCreateInstance($('savedToast'), { delay: 3000 }).show()
     }
 
     function pad(n) {
@@ -497,16 +514,17 @@
       const button = $('submitButton')
       button.disabled = true
 
+      const type = currentEntryType()
+      const category = $('category').value
+      const amount = Number($('amount').value)
       try {
         // トークンの再取得はクリック直後に行う（ポップアップブロック対策）
         await ensureToken()
-        const type = currentEntryType()
-        const amount = Number($('amount').value)
         const row = [
           nowString(),
           $('inputDate').value,
           $('wallet').value,
-          $('category').value,
+          category,
           type === 'income' ? amount : '', // E 列: 収入額
           type === 'expense' ? amount : '', // F 列: 支出額
           $('note').value,
@@ -535,7 +553,7 @@
       $('note').value = ''
       setEntryType('expense')
       form.classList.remove('was-validated')
-      showMessage('登録しました', 'success')
+      showSavedToast(`${type === 'income' ? '収入' : '支出'}「${category}」${amount.toLocaleString('ja-JP')} 円を登録しました`)
       $('amount').focus()
     }
 
