@@ -20,6 +20,11 @@
   </script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
+  <!-- 日付の選択に flatpickr を使う。iOS 標準のピッカーと違い、日付をタップした時点で確定して閉じる -->
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/themes/dark.css" rel="stylesheet" media="(prefers-color-scheme: dark)">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/ja.js"></script>
   <style>
     /* Google のサインインボタンのガイドラインに沿った配色 */
     .btn-google {
@@ -131,7 +136,7 @@
         </div>
         <div class="col-6">
           <label for="inputDate" class="form-label mb-1">日付</label>
-          <input type="date" class="form-control" id="inputDate" required>
+          <input type="text" class="form-control" id="inputDate" required>
         </div>
         <div class="col-4" id="entryTypeGroup">
           <span class="form-label d-block mb-1">種類</span>
@@ -574,7 +579,14 @@
     // 初期化
     // ---------------------------------------------------------------
 
-    $('inputDate').value = todayString()
+    // disableMobile: スマホでも OS 標準のピッカーではなく flatpickr のカレンダーを出す
+    // closeOnSelect（既定で有効）: 日付をタップした時点で確定して閉じる
+    flatpickr($('inputDate'), {
+      locale: 'ja',
+      dateFormat: 'Y-m-d',
+      defaultDate: todayString(),
+      disableMobile: true,
+    })
     $('authorizeButton').addEventListener('click', handleAuthClick)
     $('changeSheetButton').addEventListener('click', openPicker)
     $('entryForm').addEventListener('submit', handleSubmit)
