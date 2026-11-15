@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>プライバシーポリシー - 家計簿的</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0;
+      padding: 2rem 1rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      line-height: 1.7;
+      max-width: 40rem;
+      margin-inline: auto;
+    }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; }
+    ul { padding-left: 1.4rem; }
+    footer { margin-top: 3rem; font-size: 0.9rem; opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <h1>プライバシーポリシー</h1>
+  <p>
+    本ポリシーは、個人が開発・提供するウェブアプリ「家計簿的」（以下「本アプリ」）における、利用者の情報の取り扱いについて定めるものです。
+  </p>
+
+  <h2>1. 本アプリの概要</h2>
+  <p>
+    本アプリは、利用者自身の Google スプレッドシートに家計簿の記録を追加するためのツールです。
+    本アプリは独自のサーバーやデータベースを持たず、利用者のブラウザから Google の API を直接呼び出して動作します。
+  </p>
+
+  <h2>2. 取得する情報と利用目的</h2>
+  <ul>
+    <li>
+      <strong>Google アカウントによる認証情報</strong><br>
+      Google の OAuth 2.0 を用いて、利用者の Google アカウントでログインします。
+      本アプリが要求する権限（スコープ）は「このアプリで使用する特定の Google ドライブ ファイルの表示、編集、作成、削除」（<code>drive.file</code>）のみです。
+      これにより本アプリは、利用者が Google Picker で選択したスプレッドシートにのみアクセスでき、それ以外のファイルにはアクセスできません。
+    </li>
+    <li>
+      <strong>スプレッドシートの内容</strong><br>
+      利用者が選択したスプレッドシートから、お財布および費目の選択肢（「設定」シート）を読み取ります。
+      また、利用者が入力した日付・お財布・費目・支出額・備考を、同じスプレッドシートに行として追加します。
+      これらの情報は利用者自身のスプレッドシートにのみ保存されます。
+    </li>
+    <li>
+      <strong>ブラウザに保存する情報</strong><br>
+      利用者が選択したスプレッドシートの ID と名前を、利用者のブラウザの localStorage に保存します。
+      これは次回以降に同じスプレッドシートを自動的に使うためのもので、本アプリの開発者を含む第三者に送信されることはありません。
+    </li>
+  </ul>
+
+  <h2>3. 情報の送信先と第三者提供</h2>
+  <p>
+    本アプリが取得した情報は、Google の API（Google Sheets API、Google Picker API、Google Identity Services）との通信にのみ利用されます。
+    本アプリの開発者が利用者の情報を収集・保存・閲覧することはなく、第三者への提供・販売も行いません。
+  </p>
+
+  <h2>4. Google API サービスのユーザーデータに関するポリシーの遵守</h2>
+  <p>
+    本アプリによる Google API から取得した情報の利用および他のアプリへの転送は、
+    <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API サービスのユーザーデータに関するポリシー</a>（限定的な使用の要件を含む）に準拠します。
+  </p>
+  <p lang="en">
+    Kakeiboteki's (家計簿的) use and transfer to any other app of information received from Google APIs will adhere to the
+    <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.
+  </p>
+
+  <h2>5. アクセス権の取り消しとデータの削除</h2>
+  <ul>
+    <li>
+      本アプリへのアクセス権は、Google アカウントの
+      <a href="https://myaccount.google.com/permissions">「サードパーティ製のアプリとサービス」</a>からいつでも取り消すことができます。
+    </li>
+    <li>
+      ブラウザに保存された情報は、ブラウザのサイトデータを削除することで消去できます。
+    </li>
+    <li>
+      スプレッドシートに記録された内容は利用者自身の Google ドライブ上にあり、利用者が自由に編集・削除できます。
+    </li>
+  </ul>
+
+  <h2>6. 本ポリシーの変更</h2>
+  <p>
+    本ポリシーの内容は、必要に応じて変更することがあります。変更後の内容は本ページに掲載した時点で効力を生じます。
+  </p>
+
+  <h2>7. お問い合わせ</h2>
+  <p>
+    本ポリシーに関するお問い合わせは、<a href="https://github.com/kangaechu/kakeibo-frontend/issues">GitHub の Issue</a> からお願いします。
+  </p>
+
+  <footer>
+    制定日: 2026年11月15日<br>
+    <a href="./index.html">家計簿的 トップへ戻る</a>
+  </footer>
+</body>
+</html>
